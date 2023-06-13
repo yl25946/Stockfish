@@ -24,46 +24,48 @@
 
 #include "types.h"
 
-namespace Stockfish {
+namespace Stockfish
+{
 
-class Position;
+  class Position;
 
-namespace Eval {
+  namespace Eval
+  {
 
-  std::string trace(Position& pos);
-  Value evaluate(const Position& pos);
+    std::string trace(Position &pos);
+    Value evaluate(const Position &pos);
 
-  // The default net name MUST follow the format nn-[SHA256 first 12 digits].nnue
-  // for the build process (profile-build and fishtest) to work. Do not change the
-  // name of the macro, as it is used in the Makefile.
-  #define EvalFileDefaultName   "nn-84e2983ee6a6.nnue"
-
-  namespace NNUE {
-    enum struct UseNNUEMode
+// The default net name MUST follow the format nn-[SHA256 first 12 digits].nnue
+// for the build process (profile-build and fishtest) to work. Do not change the
+// name of the macro, as it is used in the Makefile.
+#define EvalFileDefaultName "nn-84e2983ee6a6.nnue"
+    namespace NNUE
     {
-      False,
-      True,
-      Pure
-    };
+      enum struct UseNNUEMode
+      {
+        False,
+        True,
+        Pure
+      };
 
-    extern UseNNUEMode useNNUE;
-    extern std::string currentEvalFileName;
+      extern UseNNUEMode useNNUE;
+      extern std::string currentEvalFileName;
 
-    std::string trace(Position& pos);
-    Value evaluate(const Position& pos, bool adjusted = false);
+      std::string trace(Position &pos);
+      Value evaluate(const Position &pos, bool adjusted = false);
 
-    void init();
-    void verify();
+      void init();
+      void verify();
 
-    bool load_eval(std::string name, std::istream& stream);
-    bool save_eval(std::ostream& stream);
-    bool save_eval(const std::optional<std::string>& filename);
+      bool load_eval(std::string name, std::istream &stream);
+      bool save_eval(std::ostream &stream);
+      bool save_eval(const std::optional<std::string> &filename);
 
-    std::int16_t evaluate_pure(const Position& pos);
+      std::int16_t evaluate_pure(const Position &pos);
 
-  } // namespace NNUE
+    } // namespace NNUE
 
-} // namespace Eval
+  } // namespace Eval
 
 } // namespace Stockfish
 
