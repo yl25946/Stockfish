@@ -793,13 +793,13 @@ Value Search::Worker::search(
             ss->currentMove         = Move::null();
             ss->continuationHistory = &thisThread->continuationHistory[0][0][NO_PIECE][0];
 
-            pos.do_null_move(ss, tt);
+            pos.do_null_move(st, tt);
 
             Value nullValue = -search<NonPV>(pos, ss + 1, -beta, -beta + 1, depth - R, !cutNode);
 
             pos.undo_null_move();
 
-            if (score >= beta)
+            if (nullvalue >= beta)
             {
                 depth -= 4;
 
