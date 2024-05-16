@@ -799,7 +799,7 @@ Value Search::Worker::search(
 
             pos.undo_null_move();
 
-            if (nullvalue >= beta)
+            if (nullValue >= beta)
             {
                 depth -= 4;
 
