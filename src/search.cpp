@@ -618,28 +618,36 @@ Value Search::Worker::search(
     // At non-PV nodes we check for an early TT cutoff
     if (!PvNode && !excludedMove && tte->depth() > depth
         && ttValue != VALUE_NONE  // Possible in case of TT access race or if !ttHit
-        && (tte->bound() & (ttValue >= beta ? BOUND_LOWER : BOUND_UPPER)))
+    )
     {
-        // If ttMove is quiet, update move sorting heuristics on TT hit (~2 Elo)
-        if (ttMove && ttValue >= beta)
+        if ((tte->bound() & (ttValue >= beta ? BOUND_LOWER : BOUND_UPPER)))
         {
-            // Bonus for a quiet ttMove that fails high (~2 Elo)
-            if (!ttCapture)
-                update_quiet_stats(pos, ss, *this, ttMove, stat_bonus(depth));
+            // If ttMove is quiet, update move sorting heuristics on TT hit (~2 Elo)
+            if (ttMove && ttValue >= beta)
+            {
+                // Bonus for a quiet ttMove that fails high (~2 Elo)
+                if (!ttCapture)
+                    update_quiet_stats(pos, ss, *this, ttMove, stat_bonus(depth));
 
-            // Extra penalty for early quiet moves of
-            // the previous ply (~1 Elo on STC, ~2 Elo on LTC)
-            if (prevSq != SQ_NONE && (ss - 1)->moveCount <= 2 && !priorCapture)
-                update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
-                                              -stat_malus(depth + 1));
+                // Extra penalty for early quiet moves of
+                // the previous ply (~1 Elo on STC, ~2 Elo on LTC)
+                if (prevSq != SQ_NONE && (ss - 1)->moveCount <= 2 && !priorCapture)
+                    update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
+                                                  -stat_malus(depth + 1));
+            }
+
+            // Partial workaround for the graph history interaction problem
+            // For high rule50 counts don't produce transposition table cutoffs.
+            if (pos.rule50_count() < 90)
+                return ttValue >= beta && std::abs(ttValue) < VALUE_TB_WIN_IN_MAX_PLY
+                       ? (ttValue * 3 + beta) / 4
+                       : ttValue;
         }
-
-        // Partial workaround for the graph history interaction problem
-        // For high rule50 counts don't produce transposition table cutoffs.
-        if (pos.rule50_count() < 90)
-            return ttValue >= beta && std::abs(ttValue) < VALUE_TB_WIN_IN_MAX_PLY
-                   ? (ttValue * 3 + beta) / 4
-                   : ttValue;
+        // try an extension if the we aren't able to cutoff
+        else
+        {
+            Depth += 2;
+        }
     }
 
     // Step 5. Tablebases probe
