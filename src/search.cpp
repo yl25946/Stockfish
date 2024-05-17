@@ -646,7 +646,7 @@ Value Search::Worker::search(
         // try an extension if the we aren't able to cutoff
         else
         {
-            depth += 1;
+            depth += 2;
         }
     }
 
