@@ -646,7 +646,7 @@ Value Search::Worker::search(
         // try an extension if the we aren't able to cutoff
         else
         {
-            depth += (depth < 4);
+            depth += !cutNode && (depth < 4);
         }
     }
 
