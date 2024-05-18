@@ -801,7 +801,7 @@ Value Search::Worker::search(
 
             if (nullValue >= beta)
             {
-                depth = depth != 0 ? std::log(depth) : 0;
+                depth = std::sprt(depth);
             }
         }
 
