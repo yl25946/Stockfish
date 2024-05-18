@@ -804,7 +804,7 @@ Value Search::Worker::search(
                 depth /= 2;
 
                 if (depth <= 0)
-                    return qsearch<NonPV>(pos, ss, alpha, beta);
+                    return qsearch<NonPV>(pos, ss, alpha - 1, alpha);
             }
         }
 
