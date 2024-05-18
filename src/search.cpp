@@ -801,10 +801,11 @@ Value Search::Worker::search(
 
             if (nullValue >= beta)
             {
-                depth -= 4;
+                depth = std::sqrt(depth);
 
-                if (depth <= 0)
-                    return qsearch<NonPV>(pos, ss, alpha - 1, alpha);
+                // don't need this because will always be greater than >1
+                // if (depth <= 0)
+                //     return qsearch<NonPV>(pos, ss, alpha - 1, alpha);
             }
         }
 
