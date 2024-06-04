@@ -322,11 +322,13 @@ void Search::Worker::iterative_deepening() {
             optimism[us]  = 122 * avg / (std::abs(avg) + 92);
             optimism[~us] = -optimism[us];
 
+            int failedHighCnt = 0;
+            // only shift on higher depths
+            bool shifted = !(rootDepth > 15);
+
             // Start with a small aspiration window and, in the case of a fail
             // high/low, re-search with a bigger window until we don't fail
             // high/low anymore.
-            int  failedHighCnt = 0;
-            bool shifted       = false;
             while (true)
             {
                 // Adjust the effective depth searched, but ensure at least one effective increment
