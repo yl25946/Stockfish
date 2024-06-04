@@ -325,7 +325,8 @@ void Search::Worker::iterative_deepening() {
             // Start with a small aspiration window and, in the case of a fail
             // high/low, re-search with a bigger window until we don't fail
             // high/low anymore.
-            int failedHighCnt = 0;
+            int  failedHighCnt = 0;
+            bool shifted       = false;
             while (true)
             {
                 // Adjust the effective depth searched, but ensure at least one effective increment
@@ -354,6 +355,31 @@ void Search::Worker::iterative_deepening() {
                 if (mainThread && multiPV == 1 && (bestValue <= alpha || bestValue >= beta)
                     && elapsed_time() > 3000)
                     main_manager()->pv(*this, threads, tt, rootDepth);
+
+                // on the first re-search, instead of expanding delta, we shift alpha and beta to around bestValue
+                if (!shifted)
+                {
+                    shifted        = true;
+                    int difference = abs(rootDelta - bestValue);
+
+                    if (bestValue <= alpha)
+                    {
+                        beta  = std::min(bestValue + difference, VALUE_INFINITE);
+                        alpha = std::max(bestValue - difference, -VALUE_INFINITE);
+
+                        failedHighCnt = 0;
+                        if (mainThread)
+                            mainThread->stopOnPonderhit = false;
+                    }
+                    else if (bestValue >= beta)
+                    {
+                        beta  = std::min(bestValue + difference, VALUE_INFINITE);
+                        alpha = std::max(bestValue - difference, -VALUE_INFINITE);
+                        ++failedHighCnt;
+                    }
+                    else
+                        break;
+                }
 
                 // In case of failing low/high increase aspiration window and
                 // re-search, otherwise exit the loop.
@@ -579,9 +605,10 @@ Value Search::Worker::search(
         // Step 2. Check for aborted search and immediate draw
         if (threads.stop.load(std::memory_order_relaxed) || pos.is_draw(ss->ply)
             || ss->ply >= MAX_PLY)
-            return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(
-                     networks[numaAccessToken], pos, refreshTable, thisThread->optimism[us])
-                                                        : value_draw(thisThread->nodes);
+            return (ss->ply >= MAX_PLY && !ss->inCheck)
+                   ? evaluate(networks[numaAccessToken], pos, refreshTable,
+                              thisThread->optimism[us])
+                   : value_draw(thisThread->nodes);
 
         // Step 3. Mate distance pruning. Even if we mate at the next move our score
         // would be at best mate_in(ss->ply + 1), but if alpha is already bigger because
