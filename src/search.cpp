@@ -326,7 +326,7 @@ void Search::Worker::iterative_deepening() {
             // high/low, re-search with a bigger window until we don't fail
             // high/low anymore.
             int  failedHighCnt = 0;
-            bool shifted       = !(rootDepth > 10);
+            bool shifted       = !(rootDepth > 20);
             while (true)
             {
                 // Adjust the effective depth searched, but ensure at least one effective increment
