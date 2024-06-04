@@ -324,7 +324,7 @@ void Search::Worker::iterative_deepening() {
 
             int failedHighCnt = 0;
             // only shift on higher depths
-            bool shifted = !(rootDepth > 15);
+            bool shifted = !(rootDepth > 10);
 
             // Start with a small aspiration window and, in the case of a fail
             // high/low, re-search with a bigger window until we don't fail
