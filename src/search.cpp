@@ -359,13 +359,13 @@ void Search::Worker::iterative_deepening() {
                 // on the first re-search, instead of expanding delta, we shift alpha and beta to around bestValue
                 if (!shifted)
                 {
-                    shifted        = true;
-                    int difference = abs(rootDelta - bestValue);
+                    shifted              = true;
+                    int score_difference = abs((alpha + beta) / 2 - bestValue);
 
                     if (bestValue <= alpha)
                     {
-                        beta  = std::min(bestValue + difference, VALUE_INFINITE);
-                        alpha = std::max(bestValue - difference, -VALUE_INFINITE);
+                        beta  = std::min(bestValue + score_difference, VALUE_INFINITE);
+                        alpha = std::max(bestValue - score_difference, -VALUE_INFINITE);
 
                         failedHighCnt = 0;
                         if (mainThread)
@@ -373,12 +373,14 @@ void Search::Worker::iterative_deepening() {
                     }
                     else if (bestValue >= beta)
                     {
-                        beta  = std::min(bestValue + difference, VALUE_INFINITE);
-                        alpha = std::max(bestValue - difference, -VALUE_INFINITE);
+                        beta  = std::min(bestValue + score_difference, VALUE_INFINITE);
+                        alpha = std::max(bestValue - score_difference, -VALUE_INFINITE);
                         ++failedHighCnt;
                     }
                     else
                         break;
+
+                    continue;
                 }
 
                 // In case of failing low/high increase aspiration window and
