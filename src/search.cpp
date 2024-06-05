@@ -366,8 +366,8 @@ void Search::Worker::iterative_deepening() {
 
                     if (bestValue <= alpha)
                     {
-                        beta  = std::min(bestValue + score_difference, VALUE_INFINITE);
-                        alpha = std::max(bestValue - score_difference, -VALUE_INFINITE);
+                        beta  = std::min(beta + score_difference, VALUE_INFINITE);
+                        alpha = std::max(alpha - score_difference, -VALUE_INFINITE);
 
                         failedHighCnt = 0;
                         if (mainThread)
@@ -375,8 +375,8 @@ void Search::Worker::iterative_deepening() {
                     }
                     else if (bestValue >= beta)
                     {
-                        beta  = std::min(bestValue + score_difference, VALUE_INFINITE);
-                        alpha = std::max(bestValue - score_difference, -VALUE_INFINITE);
+                        beta  = std::min(beta + score_difference, VALUE_INFINITE);
+                        alpha = std::max(alpha - score_difference, -VALUE_INFINITE);
                         ++failedHighCnt;
                     }
                     else
