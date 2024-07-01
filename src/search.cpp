@@ -1075,7 +1075,7 @@ moves_loop:  // When in check, search starts here
                     int doubleMargin = 290 * PvNode - 200 * !ttCapture;
                     int tripleMargin = 107 + 247 * PvNode - 278 * !ttCapture + 99 * ss->ttPv;
 
-                    extension = 1 + (value < singularBeta - doubleMargin)
+                    extension = 2 + (value < singularBeta - doubleMargin)
                               + (value < singularBeta - tripleMargin);
 
                     depth += ((!PvNode) && (depth < 18));
@@ -1096,12 +1096,15 @@ moves_loop:  // When in check, search starts here
                 // so we reduce the ttMove in favor of other moves based on some conditions:
 
                 // If the ttMove is assumed to fail high over current beta (~7 Elo)
-                else if (ttData.value >= beta)
-                    extension = -3;
+                else
+                {
+                    if (ttData.value >= beta)
+                        extension = -3;
 
-                // If we are on a cutNode but the ttMove is not assumed to fail high over current beta (~1 Elo)
-                else if (cutNode)
-                    extension = -2;
+                    // If we are on a cutNode but the ttMove is not assumed to fail high over current beta (~1 Elo)
+                    if (cutNode)
+                        extension = -2;
+                }
             }
 
             // Extension for capturing the previous moved piece (~0 Elo on STC, ~1 Elo on LTC)
