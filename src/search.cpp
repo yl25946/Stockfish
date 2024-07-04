@@ -1378,7 +1378,7 @@ moves_loop:  // When in check, search starts here
     {
         int bonus = (113 * (depth > 5) + 118 * (PvNode || cutNode) + 119 * ((ss - 1)->moveCount > 8)
                      + 64 * (!ss->inCheck && bestValue <= ss->staticEval - 107)
-                     + 147 * (!(ss - 1)->inCheck && bestValue <= -(ss - 1)->staticEval - 75));
+                     + 147 * (!(ss - 1)->inCheck && bestValue <= -(ss - 1)->staticEval - 75)) + 50 * improving;
 
 
         // proportional to "how much damage we have to undo"
