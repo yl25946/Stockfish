@@ -77,8 +77,8 @@ Value futility_margin(Depth d, bool noTtCutNode, bool improving, bool oppWorseni
     return futilityMult * d - improvingDeduction - worseningDeduction;
 }
 
-constexpr int futility_move_count(bool improving, Depth depth) {
-    return improving ? (3 + depth * depth) : (3 + depth * depth) / 2;
+constexpr int futility_move_count(int improvementFactor, Depth depth) {
+    return (3 + depth * depth) * (25 + improvementFactor) / 50;
 }
 
 // Add correctionHistory value to raw staticEval and guarantee evaluation does not hit the tablebase range
@@ -719,6 +719,7 @@ Value Search::Worker::search(
         // Skip early pruning when in check
         ss->staticEval = eval = VALUE_NONE;
         improving             = false;
+        ss->improvementFactor = 0;
         goto moves_loop;
     }
     else if (excludedMove)
@@ -774,6 +775,23 @@ Value Search::Worker::search(
     improving = (ss - 2)->staticEval != VALUE_NONE
                 ? ss->staticEval > (ss - 2)->staticEval
                 : (ss - 4)->staticEval != VALUE_NONE && ss->staticEval > (ss - 4)->staticEval;
+
+    if ((ss - 2)->staticEval != VALUE_NONE)
+    {
+        ss->improvementFactor = (ss - 2)->improvementFactor + ss->staticEval - (ss - 2)->staticEval;
+        ss->improvementFactor = std::clamp(ss->improvementFactor, 0, 25);
+    }
+
+    else if ((ss - 4)->staticEval != VALUE_NONE)
+    {
+        ss->improvementFactor = (ss - 4)->improvementFactor + ss->staticEval - (ss - 4)->staticEval;
+        ss->improvementFactor = std::clamp(ss->improvementFactor, 0, 25);
+    }
+
+    else
+    {
+        ss->improvementFactor = 0;
+    }
 
     opponentWorsening = ss->staticEval + (ss - 1)->staticEval > 2;
 
@@ -1010,7 +1028,7 @@ moves_loop:  // When in check, search starts here
         {
             // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold (~8 Elo)
             moveCountPruning =
-              moveCount >= futility_move_count(improving, depth)
+              moveCount >= futility_move_count(ss->improvementFactor, depth)
                              - (singularBound == BOUND_UPPER && singularValue < alpha - 50);
 
             // Reduced depth of the next LMR search
