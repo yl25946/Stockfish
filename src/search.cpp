@@ -785,7 +785,7 @@ Value Search::Worker::search(
     else if ((ss - 4)->staticEval != VALUE_NONE)
     {
         ss->improvementFactor = (ss - 4)->improvementFactor + ss->staticEval - (ss - 4)->staticEval;
-        ss->improvementFactor = std::clamp(ss->improvementFactor, 0, 25);
+        ss->improvementFactor = std::clamp(ss->improvementFactor / 2, 0, 25);
     }
 
     else
