@@ -770,6 +770,8 @@ Value Search::Worker::search(
                 ? ss->staticEval > (ss - 2)->staticEval
                 : (ss - 4)->staticEval != VALUE_NONE && ss->staticEval > (ss - 4)->staticEval;
 
+    ss->improving = improving;
+
     opponentWorsening = ss->staticEval + (ss - 1)->staticEval > 2;
 
     // Step 7. Razoring (~1 Elo)
@@ -1173,6 +1175,10 @@ moves_loop:  // When in check, search starts here
 
         // Increase reduction if ttMove is a capture (~3 Elo)
         if (ttCapture)
+            r++;
+
+        // Increase reduction if previous position was improving but current position is not
+        if (!improving && (ss - 2)->improving)
             r++;
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
