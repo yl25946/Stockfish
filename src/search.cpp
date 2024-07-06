@@ -66,8 +66,9 @@ using namespace Search;
 namespace {
 
 // Futility margin
-Value futility_margin(Depth d, bool noTtCutNode, bool improving, bool oppWorsening) {
-    Value futilityMult       = 122 - 37 * noTtCutNode;
+Value futility_margin(
+  Depth d, bool noTtCutNode, bool improving, int improvingMargin, bool oppWorsening) {
+    Value futilityMult       = 122 - 37 * noTtCutNode - improving * improvingMargin;
     Value improvingDeduction = 58 * improving * futilityMult / 32;
     Value worseningDeduction = oppWorsening * futilityMult / 3;
 
@@ -761,16 +762,23 @@ Value Search::Worker::search(
               << bonus / 2;
     }
 
+    Value improvingMargin;
+
     // Set up the improving flag, which is true if current static evaluation is
     // bigger than the previous static evaluation at our turn (if we were in
     // check at our previous move we look at static evaluation at move prior to it
     // and if we were in check at move prior to it flag is set to true) and is
     // false otherwise. The improving flag is used in various pruning heuristics.
-    improving = (ss - 2)->staticEval != VALUE_NONE
-                ? ss->staticEval > (ss - 2)->staticEval
-                : (ss - 4)->staticEval != VALUE_NONE && ss->staticEval > (ss - 4)->staticEval;
-
-    ss->improving = improving;
+    if ((ss - 2)->staticEval != VALUE_NONE)
+    {
+        improving       = ss->staticEval > (ss - 2)->staticEval;
+        improvingMargin = ss->staticEval - (ss - 2)->staticEval;
+    }
+    else if ((ss - 4)->staticEval != VALUE_NONE)
+    {
+        improving       = ss->staticEval > (ss - 4)->staticEval;
+        improvingMargin = ss->staticEval > (ss - 4)->staticEval;
+    }
 
     opponentWorsening = ss->staticEval + (ss - 1)->staticEval > 2;
 
@@ -787,8 +795,10 @@ Value Search::Worker::search(
     // Step 8. Futility pruning: child node (~40 Elo)
     // The depth condition is important for mate finding.
     if (!ss->ttPv && depth < 13
-        && eval - futility_margin(depth, cutNode && !ss->ttHit, improving, opponentWorsening)
-               - (ss - 1)->statScore / 260
+        && eval
+               - futility_margin(depth, cutNode && !ss->ttHit, improving, improvingMargin,
+                                 opponentWorsening)
+               - (ss - 1)->statScore / 260 + depth
              >= beta
         && eval >= beta && (!ttData.move || ttCapture) && beta > VALUE_TB_LOSS_IN_MAX_PLY
         && eval < VALUE_TB_WIN_IN_MAX_PLY)
@@ -1175,10 +1185,6 @@ moves_loop:  // When in check, search starts here
 
         // Increase reduction if ttMove is a capture (~3 Elo)
         if (ttCapture)
-            r++;
-
-        // Increase reduction if previous position was improving but current position is not
-        if (!improving && (ss - 2)->improving)
             r++;
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
