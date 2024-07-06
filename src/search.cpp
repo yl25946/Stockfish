@@ -537,10 +537,6 @@ Value Search::Worker::search(
     constexpr bool PvNode   = nodeType != NonPV;
     constexpr bool rootNode = nodeType == Root;
 
-    // Dive into quiescence search when the depth reaches zero
-    if (depth <= 0)
-        return qsearch < PvNode ? PV : NonPV > (pos, ss, alpha, beta);
-
     // Limit the depth if extensions made it too large
     depth = std::min(depth, MAX_PLY - 1);
 
@@ -658,6 +654,12 @@ Value Search::Worker::search(
         if (pos.rule50_count() < 90)
             return ttData.value;
     }
+
+    // Dive into quiescence search when the depth reaches zero
+    // We do this after TT cutoffs because they might have a TT entry that contains more information
+    if (depth <= 0)
+        return qsearch < PvNode ? PV : NonPV > (pos, ss, alpha, beta);
+
 
     // Step 5. Tablebases probe
     if (!rootNode && !excludedMove && tbConfig.cardinality)
