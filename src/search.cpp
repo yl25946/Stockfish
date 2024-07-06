@@ -69,7 +69,7 @@ namespace {
 Value futility_margin(
   Depth d, bool noTtCutNode, bool improving, int improvingMargin, bool oppWorsening) {
     Value futilityMult       = 122 - 37 * noTtCutNode;
-    Value improvingDeduction = improvingMargin * improving * futilityMult / 32;
+    Value improvingDeduction = std::clamp(improvingMargin, 0, 75) * improving * futilityMult / 32;
     Value worseningDeduction = oppWorsening * futilityMult / 3;
 
     assert(improvingMargin * improving >= 0);
@@ -777,7 +777,7 @@ Value Search::Worker::search(
     else if ((ss - 4)->staticEval != VALUE_NONE)
     {
         improving       = ss->staticEval > (ss - 4)->staticEval;
-        improvingMargin = ss->staticEval > (ss - 4)->staticEval;
+        improvingMargin = ss->staticEval - (ss - 4)->staticEval;
     }
 
     opponentWorsening = ss->staticEval + (ss - 1)->staticEval > 2;
