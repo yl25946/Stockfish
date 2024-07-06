@@ -560,8 +560,8 @@ Value Search::Worker::search(
     Key   posKey;
     Move  move, excludedMove, bestMove;
     Depth extension, newDepth;
-    Value bestValue, value, eval, maxValue, probCutBeta, singularValue;
-    bool  givesCheck, improving, priorCapture, opponentWorsening;
+    Value bestValue, value, eval, maxValue, probCutBeta, singularValue, improvingMargin = 0;
+    bool  givesCheck, improving = false, priorCapture, opponentWorsening;
     bool  capture, moveCountPruning, ttCapture;
     Piece movedPiece;
     int   moveCount, captureCount, quietCount;
@@ -761,8 +761,6 @@ Value Search::Worker::search(
             thisThread->pawnHistory[pawn_structure_index(pos)][pos.piece_on(prevSq)][prevSq]
               << bonus / 2;
     }
-
-    Value improvingMargin;
 
     // Set up the improving flag, which is true if current static evaluation is
     // bigger than the previous static evaluation at our turn (if we were in
