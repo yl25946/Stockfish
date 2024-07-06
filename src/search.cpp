@@ -561,7 +561,7 @@ Value Search::Worker::search(
     Move  move, excludedMove, bestMove;
     Depth extension, newDepth;
     Value bestValue, value, eval, maxValue, probCutBeta, singularValue, improvingMargin = 0;
-    bool  givesCheck, improving, priorCapture, opponentWorsening;
+    bool  givesCheck, improving = false, priorCapture, opponentWorsening;
     bool  capture, moveCountPruning, ttCapture;
     Piece movedPiece;
     int   moveCount, captureCount, quietCount;
