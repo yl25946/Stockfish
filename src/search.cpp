@@ -1178,8 +1178,8 @@ moves_loop:  // When in check, search starts here
             r++;
 
         // Increase reduction if previous position was improving but current position is not
-        if (!improving && (ss - 2)->improving)
-            r++;
+        if (improving && !(ss - 2)->improving)
+            r--;
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
         if ((ss + 1)->cutoffCnt > 3)
