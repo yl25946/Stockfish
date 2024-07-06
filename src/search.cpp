@@ -68,11 +68,11 @@ namespace {
 // Futility margin
 Value futility_margin(
   Depth d, bool noTtCutNode, bool improving, int improvingMargin, bool oppWorsening) {
-    Value futilityMult       = 122 - 37 * noTtCutNode - improving * improvingMargin;
+    Value futilityMult       = 122 - 37 * noTtCutNode;
     Value improvingDeduction = 58 * improving * futilityMult / 32;
     Value worseningDeduction = oppWorsening * futilityMult / 3;
 
-    return futilityMult * d - improvingDeduction - worseningDeduction;
+    return futilityMult * d - improvingDeduction - worseningDeduction - improving * improvingMargin;
 }
 
 constexpr int futility_move_count(bool improving, Depth depth) {
@@ -560,7 +560,7 @@ Value Search::Worker::search(
     Key   posKey;
     Move  move, excludedMove, bestMove;
     Depth extension, newDepth;
-    Value bestValue, value, eval, maxValue, probCutBeta, singularValue;
+    Value bestValue, value, eval, maxValue, probCutBeta, singularValue, improvingMargin = 0;
     bool  givesCheck, improving, priorCapture, opponentWorsening;
     bool  capture, moveCountPruning, ttCapture;
     Piece movedPiece;
@@ -761,8 +761,6 @@ Value Search::Worker::search(
             thisThread->pawnHistory[pawn_structure_index(pos)][pos.piece_on(prevSq)][prevSq]
               << bonus / 2;
     }
-
-    Value improvingMargin;
 
     // Set up the improving flag, which is true if current static evaluation is
     // bigger than the previous static evaluation at our turn (if we were in
