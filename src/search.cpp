@@ -1500,7 +1500,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta,
     // Note that unlike regular search, which stores the literal depth into the TT, from QS we
     // only store the current movegen stage as "depth". If in check, we search all evasions and
     // thus store DEPTH_QS_CHECKS. (Evasions may be quiet, and _CHECKS includes quiets.)
-    Depth qsTtDepth = ss->inCheck || depth >= DEPTH_QS_CHECKS ? DEPTH_QS_CHECKS : DEPTH_QS_NORMAL;
+    Depth qsTtDepth =
+      (ss->inCheck || depth >= DEPTH_QS_CHECKS ? DEPTH_QS_CHECKS : DEPTH_QS_NORMAL) + 2 * PvNode;
 
     // Step 3. Transposition table lookup
     posKey                         = pos.key();
@@ -1512,7 +1513,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta,
     pvHit        = ttHit && ttData.is_pv;
 
     // At non-PV nodes we check for an early TT cutoff
-    if (!PvNode && ttData.depth >= qsTtDepth
+    if (ttData.depth >= qsTtDepth
         && ttData.value != VALUE_NONE  // Can happen when !ttHit or when access race in probe()
         && (ttData.bound & (ttData.value >= beta ? BOUND_LOWER : BOUND_UPPER)))
         return ttData.value;
