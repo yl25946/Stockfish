@@ -793,10 +793,10 @@ Value Search::Worker::search(
         return beta + (eval - beta) / 3;
 
     // Step 9. Null move search with verification search (~35 Elo)
-    if (!PvNode && (ss - 1)->currentMove != Move::null() && (ss - 1)->statScore < 14389
-        && eval >= beta && ss->staticEval >= beta - 21 * depth + 390 && !excludedMove
-        && pos.non_pawn_material(us) && ss->ply >= thisThread->nmpMinPly
-        && beta > VALUE_TB_LOSS_IN_MAX_PLY)
+    if ((ss - 1)->currentMove != Move::null() && (ss - 1)->statScore < 14389 && eval >= beta
+        && ss->staticEval >= beta - 21 * depth + 390 && !excludedMove && pos.non_pawn_material(us)
+        && ss->ply >= thisThread->nmpMinPly && beta > VALUE_TB_LOSS_IN_MAX_PLY)
+
     {
         assert(eval - beta >= 0);
 
@@ -815,8 +815,15 @@ Value Search::Worker::search(
         // Do not return unproven mate or TB scores
         if (nullValue >= beta && nullValue < VALUE_TB_WIN_IN_MAX_PLY)
         {
-            if (thisThread->nmpMinPly || depth < 16)
+            if (!PvNode && (thisThread->nmpMinPly || depth < 16))
                 return nullValue;
+            else if (PvNode)
+                depth -= 3;
+
+            // Dive into quiescence search when the depth reaches zero
+            if (depth <= 0)
+                return qsearch < PvNode ? PV : NonPV > (pos, ss, alpha, beta);
+
 
             assert(!thisThread->nmpMinPly);  // Recursive verification is not allowed
 
@@ -830,6 +837,12 @@ Value Search::Worker::search(
 
             if (v >= beta)
                 return nullValue;
+            else if (PvNode)
+                depth -= 3;
+
+            // Dive into quiescence search when the depth reaches zero
+            if (depth <= 0)
+                return qsearch < PvNode ? PV : NonPV > (pos, ss, alpha, beta);
         }
     }
 
