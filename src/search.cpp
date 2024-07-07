@@ -818,7 +818,7 @@ Value Search::Worker::search(
             if (!PvNode && (thisThread->nmpMinPly || depth < 16))
                 return nullValue;
             else if (PvNode)
-                depth -= 3;
+                depth -= depth / 4;
 
             // Dive into quiescence search when the depth reaches zero
             if (depth <= 0)
@@ -838,7 +838,7 @@ Value Search::Worker::search(
             if (v >= beta)
                 return nullValue;
             else if (PvNode)
-                depth -= 3;
+                depth -= depth / 4;
 
             // Dive into quiescence search when the depth reaches zero
             if (depth <= 0)
