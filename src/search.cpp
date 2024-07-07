@@ -868,7 +868,7 @@ Value Search::Worker::search(
         Piece      captured;
 
         while ((move = mp.next_move()) != Move::none())
-            if (move != excludedMove && pos.legal(move))
+            if (pos.legal(move))
             {
                 assert(pos.capture_stage(move));
 
