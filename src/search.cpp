@@ -335,6 +335,8 @@ void Search::Worker::iterative_deepening() {
             int failedHighCnt = 0;
             while (true)
             {
+                (ss + 1)->cutoffCnt = 0;
+
                 // Adjust the effective depth searched, but ensure at least one effective increment
                 // for every four searchAgain steps (see issue #2717).
                 Depth adjustedDepth =
