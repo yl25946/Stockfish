@@ -606,7 +606,7 @@ Value Search::Worker::search(
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
     bestMove             = Move::none();
-    (ss + 2)->killers[0] = (ss + 2)->killers[1] = Move::none();
+    (ss + 1)->killers[0] = (ss + 1)->killers[1] = Move::none();
     (ss + 2)->cutoffCnt                         = 0;
     Square prevSq = ((ss - 1)->currentMove).is_ok() ? ((ss - 1)->currentMove).to_sq() : SQ_NONE;
     ss->statScore = 0;
