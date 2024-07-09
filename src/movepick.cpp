@@ -272,7 +272,8 @@ top:
 
     case REFUTATION :
         if (select<Next>([&]() {
-                return *cur != Move::none() && !pos.capture_stage(*cur) && pos.pseudo_legal(*cur);
+                return killer != Move::none() && !pos.capture_stage(killer)
+                    && pos.pseudo_legal(killer);
             }))
             return killer;
         ++stage;
