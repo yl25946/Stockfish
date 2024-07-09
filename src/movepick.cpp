@@ -98,7 +98,7 @@ MovePicker::MovePicker(const Position&              p,
     continuationHistory(ch),
     pawnHistory(ph),
     ttMove(ttm),
-    refutation{killer, 0},
+    killer{killer, 0},
     depth(d) {
     assert(d > 0);
 
@@ -274,7 +274,7 @@ top:
         if (select<Next>([&]() {
                 return *cur != Move::none() && !pos.capture_stage(*cur) && pos.pseudo_legal(*cur);
             }))
-            return refutation;
+            return killer;
         ++stage;
         [[fallthrough]];
 
@@ -292,7 +292,7 @@ top:
         [[fallthrough]];
 
     case GOOD_QUIET :
-        if (!skipQuiets && select<Next>([&]() { return *cur != refutation; }))
+        if (!skipQuiets && select<Next>([&]() { return *cur != killer; }))
         {
             if ((cur - 1)->value > -7998 || (cur - 1)->value <= quiet_threshold(depth))
                 return *(cur - 1);
@@ -321,7 +321,7 @@ top:
 
     case BAD_QUIET :
         if (!skipQuiets)
-            return select<Next>([&]() { return *cur != refutation; });
+            return select<Next>([&]() { return *cur != killer; });
 
         return Move::none();
 
