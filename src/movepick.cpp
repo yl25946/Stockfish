@@ -35,7 +35,7 @@ enum Stages {
     MAIN_TT,
     CAPTURE_INIT,
     GOOD_CAPTURE,
-    REFUTATION,
+    KILLER,
     QUIET_INIT,
     GOOD_QUIET,
     BAD_CAPTURE,
@@ -271,7 +271,7 @@ top:
         ++stage;
         [[fallthrough]];
 
-    case REFUTATION :
+    case KILLER :
         // increment it before so if we aren't stuck here indefinitely
         ++stage;
 
