@@ -925,12 +925,9 @@ moves_loop:  // When in check, search starts here
         && std::abs(beta) < VALUE_TB_WIN_IN_MAX_PLY)
         return probCutBeta;
 
-    const PieceToHistory* contHist[] = {(ss - 1)->continuationHistory,
-                                        (ss - 2)->continuationHistory,
-                                        (ss - 3)->continuationHistory,
-                                        (ss - 4)->continuationHistory,
-                                        nullptr,
-                                        (ss - 6)->continuationHistory};
+    const PieceToHistory* contHist[] = {
+      (ss - 1)->continuationHistory, (ss - 2)->continuationHistory, (ss - 3)->continuationHistory,
+      (ss - 4)->continuationHistory, (ss - 5)->continuationHistory, (ss - 6)->continuationHistory};
 
 
     MovePicker mp(pos, ttData.move, depth, &thisThread->mainHistory, &thisThread->captureHistory,
@@ -1821,13 +1818,13 @@ void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
 
     bonus = bonus * 52 / 64;
 
-    for (int i : {1, 2, 3, 4, 6})
+    for (int i : {1, 2, 3, 4, 5, 6})
     {
         // Only update the first 2 continuation histories if we are in check
         if (ss->inCheck && i > 2)
             break;
         if (((ss - i)->currentMove).is_ok())
-            (*(ss - i)->continuationHistory)[pc][to] << bonus / (1 + (i == 3));
+            (*(ss - i)->continuationHistory)[pc][to] << bonus / (1 + (i == 3) + 2 * (i == 5));
     }
 }
 
