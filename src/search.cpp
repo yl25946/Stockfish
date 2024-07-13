@@ -1135,6 +1135,9 @@ moves_loop:  // When in check, search starts here
 
         uint64_t nodeCount = rootNode ? uint64_t(nodes) : 0;
 
+        // Increase reduction if we have a non-optimal SEE score
+        r += !pos.see_ge(move, 0);
+
         // Step 16. Make the move
         thisThread->nodes.fetch_add(1, std::memory_order_relaxed);
         pos.do_move(move, st, givesCheck);
@@ -1162,9 +1165,6 @@ moves_loop:  // When in check, search starts here
         // Increase reduction if ttMove is a capture (~3 Elo)
         if (ttCapture)
             r++;
-
-        // Increase reduction if we have a non-optimal SEE score
-        r += pos.see_ge(move, -107);
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
         if ((ss + 1)->cutoffCnt > 3)
