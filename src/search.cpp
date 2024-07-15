@@ -1090,6 +1090,8 @@ moves_loop:  // When in check, search starts here
                               + (value < singularBeta - tripleMargin);
 
                     depth += ((!PvNode) && (depth < 16));
+
+                    extended = true;
                 }
 
                 // Multi-cut pruning
@@ -1126,12 +1128,9 @@ moves_loop:  // When in check, search starts here
                 extension = 1;
         }
 
-        if (extension > 0)
-            extended = true;
 
         // Add extension to new depth
         newDepth += extension;
-
 
         // Speculative prefetch as early as possible
         prefetch(tt.first_entry(pos.key_after(move)));
