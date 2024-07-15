@@ -940,6 +940,8 @@ moves_loop:  // When in check, search starts here
 
     int  moveCount        = 0;
     bool moveCountPruning = false;
+    // tracks if we have a positive se extension
+    bool extended = false;
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1124,8 +1126,12 @@ moves_loop:  // When in check, search starts here
                 extension = 1;
         }
 
+        if (extension > 0)
+            extended = true;
+
         // Add extension to new depth
         newDepth += extension;
+
 
         // Speculative prefetch as early as possible
         prefetch(tt.first_entry(pos.key_after(move)));
@@ -1153,6 +1159,10 @@ moves_loop:  // When in check, search starts here
         // Decrease reduction for PvNodes (~0 Elo on STC, ~2 Elo on LTC)
         if (PvNode)
             r--;
+
+        // increase reduction if we successfully extended in singular search
+        if (extended)
+            r++;
 
         // These reduction adjustments have no proven non-linear scaling
 
