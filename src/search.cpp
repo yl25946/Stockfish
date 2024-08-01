@@ -602,28 +602,42 @@ Value Search::Worker::search(
     // to save indentation, we list the condition in all code between here and there.
 
     // At non-PV nodes we check for an early TT cutoff
-    if (!PvNode && !excludedMove && ttData.depth > depth - (ttData.value <= beta)
+    if (!excludedMove && ttData.depth > depth - (ttData.value <= beta)
         && ttData.value != VALUE_NONE  // Can happen when !ttHit or when access race in probe()
         && (ttData.bound & (ttData.value >= beta ? BOUND_LOWER : BOUND_UPPER)))
     {
-        // If ttMove is quiet, update move sorting heuristics on TT hit (~2 Elo)
-        if (ttData.move && ttData.value >= beta)
-        {
-            // Bonus for a quiet ttMove that fails high (~2 Elo)
-            if (!ttCapture)
-                update_quiet_histories(pos, ss, *this, ttData.move, stat_bonus(depth));
+        if (!PvNode)
+        {  // If ttMove is quiet, update move sorting heuristics on TT hit (~2 Elo)
+            if (ttData.move && ttData.value >= beta)
+            {
+                // Bonus for a quiet ttMove that fails high (~2 Elo)
+                if (!ttCapture)
+                    update_quiet_histories(pos, ss, *this, ttData.move, stat_bonus(depth));
 
-            // Extra penalty for early quiet moves of
-            // the previous ply (~1 Elo on STC, ~2 Elo on LTC)
-            if (prevSq != SQ_NONE && (ss - 1)->moveCount <= 2 && !priorCapture)
-                update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
-                                              -stat_malus(depth + 1));
+                // Extra penalty for early quiet moves of
+                // the previous ply (~1 Elo on STC, ~2 Elo on LTC)
+                if (prevSq != SQ_NONE && (ss - 1)->moveCount <= 2 && !priorCapture)
+                    update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
+                                                  -stat_malus(depth + 1));
+            }
+
+            // Partial workaround for the graph history interaction problem
+            // For high rule50 counts don't produce transposition table cutoffs.
+            if (pos.rule50_count() < 90)
+                return ttData.value;
         }
+        else if (ttData.move && ttData.value >= beta && ttData.is_pv)
+        {
+            if (ttData.bound == BOUND_EXACT)
+                return ttData.value;
+            else if (ttData.bound == BOUND_LOWER)
+                alpha = std::max(alpha, ttData.value);
+            else if (ttData.bound == BOUND_UPPER)
+                beta = std::min(beta, ttData.value);
 
-        // Partial workaround for the graph history interaction problem
-        // For high rule50 counts don't produce transposition table cutoffs.
-        if (pos.rule50_count() < 90)
-            return ttData.value;
+            if (alpha > beta)
+                return ttData.value;
+        }
     }
 
     // Step 5. Tablebases probe
