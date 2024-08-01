@@ -907,8 +907,10 @@ moves_loop:  // When in check, search starts here
 
     value = bestValue;
 
-    int  moveCount        = 0;
-    bool moveCountPruning = false;
+    Value originalAlpha                  = alpha;
+    int   movesSinceRaisingOriginalAlpha = 0;
+    int   moveCount                      = 0;
+    bool  moveCountPruning               = false;
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1016,6 +1018,9 @@ moves_loop:  // When in check, search starts here
                 if (!pos.see_ge(move, -24 * lmrDepth * lmrDepth))
                     continue;
             }
+
+            if (depth <= 5 && movesSinceRaisingOriginalAlpha > 2 * depth)
+                break;
         }
 
         // Step 15. Extensions (~100 Elo)
@@ -1219,6 +1224,9 @@ moves_loop:  // When in check, search starts here
         // best move, principal variation nor transposition table.
         if (threads.stop.load(std::memory_order_relaxed))
             return VALUE_ZERO;
+
+        movesSinceRaisingOriginalAlpha =
+          value > originalAlpha ? 0 : movesSinceRaisingOriginalAlpha + 1;
 
         if (rootNode)
         {
