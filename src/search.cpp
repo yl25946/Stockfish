@@ -764,7 +764,7 @@ Value Search::Worker::search(
                - (ss - 1)->statScore / 260
              >= beta
         && eval >= beta && (!ttData.move || ttCapture) && beta > VALUE_TB_LOSS_IN_MAX_PLY
-        && eval < VALUE_TB_WIN_IN_MAX_PLY)
+        && eval < VALUE_TB_WIN_IN_MAX_PLY && !excludedMove)
         return beta + (eval - beta) / 3;
 
     // Step 9. Null move search with verification search (~35 Elo)
