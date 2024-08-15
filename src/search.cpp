@@ -1056,8 +1056,10 @@ moves_loop:  // When in check, search starts here
 
                 if (value < singularBeta)
                 {
-                    int doubleMargin = 293 * PvNode - 195 * !ttCapture;
-                    int tripleMargin = 107 + 259 * PvNode - 260 * !ttCapture + 98 * ss->ttPv;
+                    bool castling     = move.type_of() == CASTLING;
+                    int  doubleMargin = 293 * PvNode - 195 * !ttCapture - 50 * castling;
+                    int  tripleMargin =
+                      107 + 259 * PvNode - 260 * !ttCapture + 98 * ss->ttPv - 50 * castling;
 
                     extension = 1 + (value < singularBeta - doubleMargin)
                               + (value < singularBeta - tripleMargin);
