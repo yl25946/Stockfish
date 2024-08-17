@@ -25,8 +25,11 @@ ifeq ($(KERNEL),Linux)
 	OS := $(shell uname -o)
 endif
 
+MY_MAKE := $(MAKE)
+
 ### Target Windows OS
 ifeq ($(OS),Windows_NT)
+	MY_MAKE = "$(MAKE)"
 	ifneq ($(COMP),ndk)
 		target_windows = yes
 	endif
@@ -870,26 +873,26 @@ endif
 	format analyze
 
 analyze: net config-sanity objclean
-	$(MAKE) -k ARCH=$(ARCH) COMP=$(COMP) $(OBJS)
+	$(MY_MAKE) -k ARCH=$(ARCH) COMP=$(COMP) $(OBJS)
 
 build: net config-sanity
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) all
+	$(MY_MAKE) ARCH=$(ARCH) COMP=$(COMP) all
 
 profile-build: net config-sanity objclean profileclean
 	@echo ""
 	@echo "Step 1/4. Building instrumented executable ..."
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(profile_make)
+	$(MY_MAKE) ARCH=$(ARCH) COMP=$(COMP) $(profile_make)
 	@echo ""
 	@echo "Step 2/4. Running benchmark for pgo-build ..."
 	$(PGOBENCH) > PGOBENCH.out 2>&1
 	tail -n 4 PGOBENCH.out
 	@echo ""
 	@echo "Step 3/4. Building optimized executable ..."
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) objclean
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(profile_use)
+	$(MY_MAKE) ARCH=$(ARCH) COMP=$(COMP) objclean
+	$(MY_MAKE) ARCH=$(ARCH) COMP=$(COMP) $(profile_use)
 	@echo ""
 	@echo "Step 4/4. Deleting profile data ..."
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) profileclean
+	$(MY_MAKE) ARCH=$(ARCH) COMP=$(COMP) profileclean
 
 strip:
 	$(STRIP) $(EXE)
@@ -1050,42 +1053,42 @@ misc.o: FORCE
 FORCE:
 
 clang-profile-make:
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
+	$(MY_MAKE) ARCH=$(ARCH) COMP=$(COMP) \
 	EXTRACXXFLAGS='-fprofile-generate ' \
 	EXTRALDFLAGS=' -fprofile-generate' \
 	all
 
 clang-profile-use:
 	$(XCRUN) llvm-profdata merge -output=stockfish.profdata *.profraw
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
+	$(MY_MAKE) ARCH=$(ARCH) COMP=$(COMP) \
 	EXTRACXXFLAGS='-fprofile-use=stockfish.profdata' \
 	EXTRALDFLAGS='-fprofile-use ' \
 	all
 
 gcc-profile-make:
 	@mkdir -p profdir
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
+	$(MY_MAKE) ARCH=$(ARCH) COMP=$(COMP) \
 	EXTRACXXFLAGS='-fprofile-generate=profdir' \
 	EXTRACXXFLAGS+=$(EXTRAPROFILEFLAGS) \
 	EXTRALDFLAGS='-lgcov' \
 	all
 
 gcc-profile-use:
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
+	$(MY_MAKE) ARCH=$(ARCH) COMP=$(COMP) \
 	EXTRACXXFLAGS='-fprofile-use=profdir -fno-peel-loops -fno-tracer' \
 	EXTRACXXFLAGS+=$(EXTRAPROFILEFLAGS) \
 	EXTRALDFLAGS='-lgcov' \
 	all
 
 icx-profile-make:
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
+	$(MY_MAKE) ARCH=$(ARCH) COMP=$(COMP) \
 	EXTRACXXFLAGS='-fprofile-instr-generate ' \
 	EXTRALDFLAGS=' -fprofile-instr-generate' \
 	all
 
 icx-profile-use:
 	$(XCRUN) llvm-profdata merge -output=stockfish.profdata *.profraw
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
+	$(MY_MAKE) ARCH=$(ARCH) COMP=$(COMP) \
 	EXTRACXXFLAGS='-fprofile-instr-use=stockfish.profdata' \
 	EXTRALDFLAGS='-fprofile-use ' \
 	all
