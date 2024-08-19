@@ -1090,6 +1090,9 @@ moves_loop:  // When in check, search starts here
                 // over current beta (~1 Elo)
                 else if (cutNode)
                     extension = -2;
+
+                else if (value > beta)
+                    extension = -1;
             }
 
             // Extension for capturing the previous moved piece (~1 Elo at LTC)
@@ -1354,10 +1357,13 @@ moves_loop:  // When in check, search starts here
 
         bonus = std::max(bonus, 0);
 
-        update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
-                                      stat_bonus(depth) * bonus / 116);
-        thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()]
-          << stat_bonus(depth) * bonus / 180;
+        if ((ss - 1)->currentMove.type_of() == NORMAL)
+        {
+            update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
+                                          stat_bonus(depth) * bonus / 116);
+            thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()]
+              << stat_bonus(depth) * bonus / 180;
+        }
 
 
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
