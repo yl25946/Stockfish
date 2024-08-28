@@ -1758,13 +1758,7 @@ void update_all_stats(const Position&      pos,
     int quietMoveMalus = stat_malus(depth);
 
     if (!pos.capture_stage(bestMove))
-    {
         update_quiet_histories(pos, ss, workerThread, bestMove, quietMoveBonus);
-
-        // Decrease stats for all non-best quiet moves
-        for (Move move : quietsSearched)
-            update_quiet_histories(pos, ss, workerThread, move, -quietMoveMalus);
-    }
     else
     {
         // Increase stats for the best move in case it was a capture move
@@ -1776,6 +1770,10 @@ void update_all_stats(const Position&      pos,
     // previous ply when it gets refuted.
     if (prevSq != SQ_NONE && ((ss - 1)->moveCount == 1 + (ss - 1)->ttHit) && !pos.captured_piece())
         update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq, -quietMoveMalus);
+
+    // Decrease stats for all non-best quiet moves
+    for (Move move : quietsSearched)
+        update_quiet_histories(pos, ss, workerThread, move, -quietMoveMalus);
 
     // Decrease stats for all non-best capture moves
     for (Move move : capturesSearched)
