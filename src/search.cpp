@@ -487,6 +487,7 @@ void Search::Worker::clear() {
     mainHistory.fill(0);
     captureHistory.fill(-700);
     pawnHistory.fill(-1188);
+    materialHistory.fill(-700);
     correctionHistory.fill(0);
 
     for (bool inCheck : {false, true})
