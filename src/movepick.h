@@ -35,7 +35,7 @@
 namespace Stockfish {
 
 constexpr int PAWN_HISTORY_SIZE        = 512;  // has to be a power of 2
-constexpr int MATERIAL_HISTORY_SIZE    = 256;
+constexpr int MATERIAL_HISTORY_SIZE    = 512;
 constexpr int CORRECTION_HISTORY_SIZE  = 16384;  // has to be a power of 2
 constexpr int CORRECTION_HISTORY_LIMIT = 1024;
 
@@ -138,7 +138,7 @@ using ContinuationHistory = Stats<PieceToHistory, NOT_USED, PIECE_NB, SQUARE_NB>
 using PawnHistory = Stats<int16_t, 8192, PAWN_HISTORY_SIZE, PIECE_NB, SQUARE_NB>;
 
 // MaterialHistory is addressed by the material struct and a move's [piece][to]
-using MaterialHistory = Stats<int16_t, 4096, MATERIAL_HISTORY_SIZE, PIECE_NB, SQUARE_NB>;
+using MaterialHistory = Stats<int16_t, 8192, MATERIAL_HISTORY_SIZE, PIECE_NB, SQUARE_NB>;
 
 
 // CorrectionHistory is addressed by color and pawn structure
