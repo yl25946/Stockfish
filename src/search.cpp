@@ -83,6 +83,10 @@ constexpr int futility_move_count(bool improving, Depth depth) {
 Value to_corrected_static_eval(Value v, const Worker& w, const Position& pos) {
     auto cv = w.correctionHistory[pos.side_to_move()][pawn_structure_index<Correction>(pos)];
     v += 66 * cv / 512;
+
+    // Evaluation grain (to get more alpha-beta cuts) with randomization (for robustness)
+    v = (v / 16) * 16 - 1 + (pos.key() & 0x2);
+
     return std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
 }
 
