@@ -852,8 +852,9 @@ Value Search::Worker::search(
     // Step 11. ProbCut (~10 Elo)
     // If we have a good enough capture (or queen promotion) and a reduced search
     // returns a value much above beta, we can (almost) safely prune the previous move.
-    probCutBeta = beta + 189 - 53 * improving - 30 * opponentWorsening;
-    if (!PvNode && depth > 3
+    probCutBeta      = beta + 189 - 53 * improving - 30 * opponentWorsening;
+    probCutReduction = depth / 8 + 2;
+    if (!PvNode && depth > probCutReduction
         && std::abs(beta) < VALUE_TB_WIN_IN_MAX_PLY
         // If value from transposition table is lower than probCutBeta, don't attempt
         // probCut there and in further interactions with transposition table cutoff
@@ -907,11 +908,12 @@ Value Search::Worker::search(
             if (value >= probCutBeta)
             {
                 thisThread->captureHistory[movedPiece][move.to_sq()][type_of(captured)]
-                  << stat_bonus(depth - 2);
+                  << stat_bonus(depth - probCutReduction + 1);
 
                 // Save ProbCut data into transposition table
                 ttWriter.write(posKey, value_to_tt(value, ss->ply), ss->ttPv, BOUND_LOWER,
-                               depth - 3, move, unadjustedStaticEval, tt.generation());
+                               depth - probCutReduction, move, unadjustedStaticEval,
+                               tt.generation());
                 return std::abs(value) < VALUE_TB_WIN_IN_MAX_PLY ? value - (probCutBeta - beta)
                                                                  : value;
             }
@@ -923,9 +925,10 @@ Value Search::Worker::search(
 moves_loop:  // When in check, search starts here
 
     // Step 12. A small Probcut idea (~4 Elo)
-    probCutBeta = beta + 379;
-    if ((ttData.bound & BOUND_LOWER) && ttData.depth >= depth - 4 && ttData.value >= probCutBeta
-        && std::abs(beta) < VALUE_TB_WIN_IN_MAX_PLY
+    probCutBeta      = beta + 379;
+    probCutReduction = depth / 8 + 3;
+    if ((ttData.bound & BOUND_LOWER) && ttData.depth >= depth - probCutReduction
+        && ttData.value >= probCutBeta && std::abs(beta) < VALUE_TB_WIN_IN_MAX_PLY
         && std::abs(ttData.value) < VALUE_TB_WIN_IN_MAX_PLY)
         return probCutBeta;
 
