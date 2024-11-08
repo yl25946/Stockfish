@@ -853,7 +853,7 @@ Value Search::Worker::search(
     // If we have a good enough capture (or queen promotion) and a reduced search
     // returns a value much above beta, we can (almost) safely prune the previous move.
     probCutBeta      = beta + 189 - 53 * improving - 30 * opponentWorsening;
-    probCutReduction = depth / 8 + 2;
+    probCutReduction = depth / 4 + 2;
     if (!PvNode && depth > probCutReduction
         && std::abs(beta) < VALUE_TB_WIN_IN_MAX_PLY
         // If value from transposition table is lower than probCutBeta, don't attempt
@@ -926,7 +926,7 @@ moves_loop:  // When in check, search starts here
 
     // Step 12. A small Probcut idea (~4 Elo)
     probCutBeta      = beta + 379;
-    probCutReduction = depth / 8 + 3;
+    probCutReduction = depth / 4 + 3;
     if ((ttData.bound & BOUND_LOWER) && ttData.depth >= depth - probCutReduction
         && ttData.value >= probCutBeta && std::abs(beta) < VALUE_TB_WIN_IN_MAX_PLY
         && std::abs(ttData.value) < VALUE_TB_WIN_IN_MAX_PLY)
