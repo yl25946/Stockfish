@@ -233,8 +233,8 @@ void Search::Worker::iterative_deepening() {
     Value  alpha, beta;
     Value  bestValue     = -VALUE_INFINITE;
     Color  us            = rootPos.side_to_move();
-    double timeReduction = 1, totBestMoveChanges = 0;
-    int    delta, iterIdx                        = 0;
+    double timeReduction = 1, totBestMoveChanges = 0, totRefutationMoveChanges = 0;
+    int    delta, iterIdx = 0;
 
     // Allocate stack with extra size to allow access from (ss - 7) to (ss + 2):
     // (ss - 7) is needed for update_continuation_histories(ss - 1) which accesses (ss - 6),
@@ -283,7 +283,10 @@ void Search::Worker::iterative_deepening() {
     {
         // Age out PV variability metric
         if (mainThread)
+        {
             totBestMoveChanges /= 2;
+            totRefutationMoveChanges /= 2;
+        }
 
         // Save the last iteration's scores before the first PV line is searched and
         // all the move scores except the (new) PV are set to -VALUE_INFINITE.
@@ -437,6 +440,9 @@ void Search::Worker::iterative_deepening() {
         {
             totBestMoveChanges += th->worker->bestMoveChanges;
             th->worker->bestMoveChanges = 0;
+
+            totRefutationMoveChanges += th->worker->refutationMoveChanges;
+            th->worker->refutationMoveChanges = 0;
         }
 
         // Do we have time for the next iteration? Can we stop searching now?
@@ -452,11 +458,12 @@ void Search::Worker::iterative_deepening() {
             // If the bestMove is stable over several iterations, reduce time accordingly
             timeReduction    = lastBestMoveDepth + 8 < completedDepth ? 1.495 : 0.687;
             double reduction = (1.48 + mainThread->previousTimeReduction) / (2.17 * timeReduction);
-            double bestMoveInstability = 1 + 1.88 * totBestMoveChanges / threads.size();
-            double recapture           = limits.capSq == rootMoves[0].pv[0].to_sq() ? 0.955 : 1.005;
+            double bestMoveInstability       = 1 + 1.88 * totBestMoveChanges / threads.size();
+            double refutationMoveInstability = 1 + 1.4 * totRefutationMoveChanges / threads.size();
+            double recapture = limits.capSq == rootMoves[0].pv[0].to_sq() ? 0.955 : 1.005;
 
-            double totalTime =
-              mainThread->tm.optimum() * fallingEval * reduction * bestMoveInstability * recapture;
+            double totalTime = mainThread->tm.optimum() * fallingEval * reduction
+                             * bestMoveInstability * totRefutationMoveChanges * recapture;
 
             // Cap used time in case of a single legal move for a better viewer experience
             if (rootMoves.size() == 1)
@@ -1305,7 +1312,10 @@ moves_loop:  // When in check, search starts here
                 // This information is used for time management. In MultiPV mode,
                 // we must take care to only do this for the first PV line.
                 if (moveCount > 1 && !thisThread->pvIdx)
+                {
                     ++thisThread->bestMoveChanges;
+                    thisThread->refutationMoveChanges = 0;
+                }
             }
             else
                 // All other moves but the PV, are set to the lowest value: this
@@ -1327,6 +1337,9 @@ moves_loop:  // When in check, search starts here
             if (value + inc > alpha)
             {
                 bestMove = move;
+
+                if (PvNode && ss->ply == 1)
+                    ++thisThread->refutationMoveChanges;
 
                 if (PvNode && !rootNode)  // Update pv even in fail-high case
                     update_pv(ss->pv, move, (ss + 1)->pv);
