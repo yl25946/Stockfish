@@ -869,6 +869,9 @@ Value Search::Worker::search(
 
         MovePicker mp(pos, ttData.move, probCutBeta - ss->staticEval, &thisThread->captureHistory);
         Piece      captured;
+        PieceType  capturedPieceType;
+        int        moveCount = 0;
+        ValueList<Move, 32> failedProbCutMoves;
 
         while ((move = mp.next_move()) != Move::none())
         {
@@ -884,6 +887,7 @@ Value Search::Worker::search(
 
             movedPiece = pos.moved_piece(move);
             captured   = pos.piece_on(move.to_sq());
+            ++moveCount;
 
 
             // Prefetch the TT entry for the resulting position
@@ -913,12 +917,25 @@ Value Search::Worker::search(
                 thisThread->captureHistory[movedPiece][move.to_sq()][type_of(captured)]
                   << stat_bonus(depth - 2);
 
+                int malus = stat_malus(depth - 2);
+
+                // Decrease stats for all non-best capture moves
+                for (Move failedMove : failedProbCutMoves)
+                {
+                    Piece moved_piece = pos.moved_piece(failedMove);
+                    capturedPieceType = type_of(pos.piece_on(failedMove.to_sq()));
+                    captureHistory[moved_piece][failedMove.to_sq()][capturedPieceType] << -malus;
+                }
+
                 // Save ProbCut data into transposition table
                 ttWriter.write(posKey, value_to_tt(value, ss->ply), ss->ttPv, BOUND_LOWER,
                                depth - 3, move, unadjustedStaticEval, tt.generation());
                 return std::abs(value) < VALUE_TB_WIN_IN_MAX_PLY ? value - (probCutBeta - beta)
                                                                  : value;
             }
+
+            if (moveCount <= 32)
+                failedProbCutMoves.push_back(move);
         }
 
         Eval::NNUE::hint_common_parent_position(pos, networks[numaAccessToken], refreshTable);
