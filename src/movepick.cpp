@@ -156,8 +156,9 @@ void MovePicker::score() {
             Square    to   = m.to_sq();
 
             // histories
-            m.value =
-              2 * (*mainHistory)[pos.side_to_move()][static_cast<int>(std::sqrt(ply))][m.from_to()];
+            m.value = 2
+                    * (*mainHistory)[pos.side_to_move()]
+                                    [static_cast<int>(std::log(std::max(ply, 1)))][m.from_to()];
             m.value += 2 * (*pawnHistory)[pawn_structure_index(pos)][pc][to];
             m.value += (*continuationHistory[0])[pc][to];
             m.value += (*continuationHistory[1])[pc][to];
@@ -190,10 +191,10 @@ void MovePicker::score() {
             if (pos.capture_stage(m))
                 m.value = PieceValue[pos.piece_on(m.to_sq())] + (1 << 28);
             else
-                m.value =
-                  (*mainHistory)[pos.side_to_move()][static_cast<int>(std::sqrt(ply))][m.from_to()]
-                  + (*continuationHistory[0])[pos.moved_piece(m)][m.to_sq()]
-                  + (*pawnHistory)[pawn_structure_index(pos)][pos.moved_piece(m)][m.to_sq()];
+                m.value = (*mainHistory)[pos.side_to_move()]
+                                        [static_cast<int>(std::log(std::max(ply, 1)))][m.from_to()]
+                        + (*continuationHistory[0])[pos.moved_piece(m)][m.to_sq()]
+                        + (*pawnHistory)[pawn_structure_index(pos)][pos.moved_piece(m)][m.to_sq()];
         }
 }
 
