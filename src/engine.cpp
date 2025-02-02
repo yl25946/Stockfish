@@ -23,7 +23,6 @@
 #include <fstream>
 #include <iomanip>
 #include <iosfwd>
-#include <iostream>
 #include <memory>
 #include <ostream>
 #include <sstream>

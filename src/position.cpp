@@ -37,7 +37,6 @@
 #include "nnue/nnue_common.h"
 #include "syzygy/tbprobe.h"
 #include "tt.h"
-#include "types.h"
 #include "uci.h"
 
 using std::string;
@@ -292,6 +291,7 @@ Position& Position::set(const string& fenStr, bool isChess960, StateInfo* si) {
 
     return *this;
 }
+
 
 Position& Position::set(const BulletEntry& entry, StateInfo* si) {
     std::memset(this, 0, sizeof(Position));
@@ -1311,7 +1311,7 @@ void Position::flip() {
 // This is meant to be helpful when debugging.
 bool Position::pos_is_ok() const {
 
-    constexpr bool Fast = false;  // Quick (default) or full check?
+    constexpr bool Fast = true;  // Quick (default) or full check?
 
     if ((sideToMove != WHITE && sideToMove != BLACK) || piece_on(square<KING>(WHITE)) != W_KING
         || piece_on(square<KING>(BLACK)) != B_KING
