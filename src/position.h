@@ -26,6 +26,7 @@
 #include <string>
 
 #include "bitboard.h"
+#include "bulletformat.h"
 #include "nnue/nnue_accumulator.h"
 #include "nnue/nnue_architecture.h"
 #include "types.h"
@@ -92,6 +93,9 @@ class Position {
     Position&   set(const std::string& fenStr, bool isChess960, StateInfo* si);
     Position&   set(const std::string& code, Color c, StateInfo* si);
     std::string fen() const;
+
+    // Bulletformat input
+    Position& set(const BulletEntry& bulletEntry, StateInfo* si);
 
     // Position representation
     Bitboard pieces(PieceType pt = ALL_PIECES) const;
@@ -335,7 +339,6 @@ inline bool Position::capture_stage(Move m) const {
 inline Piece Position::captured_piece() const { return st->capturedPiece; }
 
 inline void Position::put_piece(Piece pc, Square s) {
-
     board[s] = pc;
     byTypeBB[ALL_PIECES] |= byTypeBB[type_of(pc)] |= s;
     byColorBB[color_of(pc)] |= s;

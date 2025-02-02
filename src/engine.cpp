@@ -20,7 +20,10 @@
 
 #include <cassert>
 #include <deque>
+#include <fstream>
+#include <iomanip>
 #include <iosfwd>
+#include <iostream>
 #include <memory>
 #include <ostream>
 #include <sstream>
@@ -28,6 +31,7 @@
 #include <utility>
 #include <vector>
 
+#include "bulletformat.h"
 #include "evaluate.h"
 #include "misc.h"
 #include "nnue/network.h"
@@ -267,6 +271,40 @@ void Engine::trace_eval() const {
     verify_networks();
 
     sync_cout << "\n" << Eval::trace(p, *networks) << sync_endl;
+}
+
+void Engine::relabel(const std::string& file) {
+    std::ifstream is(file, std::ios::binary);
+    std::ofstream os(file + ".out", std::ios::binary);
+
+    if (!is.is_open())
+    {
+        std::cout << "Failed to open input file." << std::endl;
+        return;
+    }
+
+    if (!os.is_open())
+    {
+        std::cout << "Failed to open output file." << std::endl;
+        return;
+    }
+
+    verify_networks();
+
+    sync_cout << "Relabling from bulletformat file " << std::quoted(file) << " to "
+              << std::quoted(file + ".out") << "..." << sync_endl;
+
+    BulletEntry currEntry;
+    StateInfo   si;
+    Position    p;
+    auto        caches = std::make_unique<Eval::NNUE::AccumulatorCaches>(*networks);
+
+    while (is.read(reinterpret_cast<char*>(&currEntry), sizeof(currEntry)))
+    {
+        p.set(currEntry, &si);
+        currEntry.score = Eval::evaluate_pure(*networks, p, *caches);
+        os.write(reinterpret_cast<const char*>(&currEntry), sizeof(currEntry));
+    }
 }
 
 const OptionsMap& Engine::get_options() const { return options; }

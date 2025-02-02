@@ -19,6 +19,7 @@
 #ifndef EVALUATE_H_INCLUDED
 #define EVALUATE_H_INCLUDED
 
+#include <cstdint>
 #include <string>
 
 #include "types.h"
@@ -43,12 +44,16 @@ struct AccumulatorCaches;
 
 std::string trace(Position& pos, const Eval::NNUE::Networks& networks);
 
-int   simple_eval(const Position& pos, Color c);
-bool  use_smallnet(const Position& pos);
-Value evaluate(const NNUE::Networks&          networks,
-               const Position&                pos,
-               Eval::NNUE::AccumulatorCaches& caches,
-               int                            optimism);
+int          simple_eval(const Position& pos, Color c);
+bool         use_smallnet(const Position& pos);
+Value        evaluate(const NNUE::Networks&          networks,
+                      const Position&                pos,
+                      Eval::NNUE::AccumulatorCaches& caches,
+                      int                            optimism);
+std::int16_t evaluate_pure(const Eval::NNUE::Networks&    networks,
+                           const Position&                pos,
+                           Eval::NNUE::AccumulatorCaches& caches);
+
 }  // namespace Eval
 
 }  // namespace Stockfish

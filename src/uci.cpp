@@ -22,6 +22,9 @@
 #include <cctype>
 #include <cmath>
 #include <cstdint>
+#include <iomanip>
+#include <ios>
+#include <iostream>
 #include <iterator>
 #include <optional>
 #include <sstream>
@@ -161,6 +164,14 @@ void UCIEngine::loop() {
                 files[1].first = files[1].second;
 
             engine.save_network(files);
+        }
+        else if (token == "relabel")
+        {
+            std::string file;
+
+            is >> std::skipws >> file;
+
+            engine.relabel(file);
         }
         else if (token == "--help" || token == "help" || token == "--license" || token == "license")
             sync_cout

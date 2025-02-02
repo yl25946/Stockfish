@@ -92,6 +92,7 @@ class Engine {
     // utility functions
 
     void trace_eval() const;
+    void relabel(const std::string& file);
 
     const OptionsMap& get_options() const;
     OptionsMap&       get_options();

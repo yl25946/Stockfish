@@ -37,6 +37,7 @@
 #include "nnue/nnue_common.h"
 #include "syzygy/tbprobe.h"
 #include "tt.h"
+#include "types.h"
 #include "uci.h"
 
 using std::string;
@@ -287,6 +288,45 @@ Position& Position::set(const string& fenStr, bool isChess960, StateInfo* si) {
     chess960 = isChess960;
     set_state();
 
+    assert(pos_is_ok());
+
+    return *this;
+}
+
+Position& Position::set(const BulletEntry& entry, StateInfo* si) {
+    std::memset(this, 0, sizeof(Position));
+    std::memset(si, 0, sizeof(StateInfo));
+    st = si;
+
+    // Bulletformat does not preserve EP square, castling rights,
+    // 50mr counter, or current ply.
+    st->epSquare       = SQ_NONE;
+    st->rule50         = 0;
+    st->castlingRights = 0;
+    gamePly            = 0;
+    chess960           = false;
+
+    // Always white to move
+    sideToMove = WHITE;
+
+    // Piece placement
+    Bitboard    occ   = entry.occ;
+    std::size_t count = 0;
+    while (occ)
+    {
+        const Square       sq           = pop_lsb(occ);
+        const std::uint8_t packedPieces = entry.pcs[count / 2];
+
+        // Two pieces of size 4 bits are packed into one byte, and ordered
+        // from lsb to msb
+        const Piece piece =
+          static_cast<Piece>(((count % 2 == 0) ? packedPieces & 0b1111 : packedPieces >> 4) + 1);
+
+        count++;
+        put_piece(piece, sq);
+    }
+
+    set_state();
     assert(pos_is_ok());
 
     return *this;
@@ -1271,7 +1311,7 @@ void Position::flip() {
 // This is meant to be helpful when debugging.
 bool Position::pos_is_ok() const {
 
-    constexpr bool Fast = true;  // Quick (default) or full check?
+    constexpr bool Fast = false;  // Quick (default) or full check?
 
     if ((sideToMove != WHITE && sideToMove != BLACK) || piece_on(square<KING>(WHITE)) != W_KING
         || piece_on(square<KING>(BLACK)) != B_KING
