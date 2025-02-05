@@ -95,8 +95,8 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
 std::int16_t Eval::evaluate_pure(const Eval::NNUE::Networks&    networks,
                                  const Position&                pos,
                                  Eval::NNUE::AccumulatorCaches& caches) {
-    auto [psqt, positional] = networks.big.evaluate(pos, &caches.big);
-    Value nnue              = psqt + positional;
+    const auto [psqt, positional] = networks.big.evaluate(pos, &caches.big);
+    const Value nnue              = (125 * psqt + 131 * positional) / 128;
     return std::clamp<Value>(nnue, std::numeric_limits<std::int16_t>::min(),
                              std::numeric_limits<std::int16_t>::max());
 }
