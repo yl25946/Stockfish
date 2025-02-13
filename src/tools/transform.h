@@ -2,6 +2,7 @@
 #define _TRANSFORM_H_
 
 #include <sstream>
+#include "evaluate.h"
 
 namespace Stockfish::Tools {
 

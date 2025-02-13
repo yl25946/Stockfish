@@ -653,6 +653,8 @@ namespace Stockfish::Tools
                     // nnue-pytorch training data loader skips positions with score VALUE_NONE
                     if (should_skip_position)
                         ps.score = 32002; // VALUE_NONE
+                    else
+                        ps.score = Stockfish::Eval::NNUE::evaluate_pure(pos);
                     ps.padding = 0;
 
                     out.write(th.id(), ps);

@@ -176,6 +176,34 @@ namespace Stockfish::Eval::NNUE {
     std::size_t correctBucket;
   };
 
+  std::int16_t evaluate_pure(const Position &pos)
+  {
+
+    // We manually align the arrays on the stack because with gcc < 9.3
+    // overaligning stack variables with alignas() doesn't work correctly.
+
+    constexpr uint64_t alignment = CacheLineSize;
+
+
+#if defined(ALIGNAS_ON_STACK_VARIABLES_BROKEN)
+    TransformedFeatureType transformedFeaturesUnaligned[FeatureTransformer::BufferSize + alignment / sizeof(TransformedFeatureType)];
+
+    auto *transformedFeatures = align_ptr_up<alignment>(&transformedFeaturesUnaligned[0]);
+#else
+    alignas(alignment)
+        TransformedFeatureType transformedFeatures[FeatureTransformer::BufferSize];
+#endif
+
+    ASSERT_ALIGNED(transformedFeatures, alignment);
+
+    const int bucket = (pos.count<ALL_PIECES>() - 1) / 4;
+    const auto psqt = featureTransformer->transform(pos, transformedFeatures, bucket);
+    const auto positional = network[bucket]->propagate(transformedFeatures);
+
+  
+      return static_cast<Value>((psqt + positional) / OutputScale);
+  }
+  
   static NnueEvalTrace trace_evaluate(const Position& pos) {
 
     // We manually align the arrays on the stack because with gcc < 9.3
