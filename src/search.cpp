@@ -79,7 +79,7 @@ Value futility_margin(Depth d, bool noTtCutNode, bool improving, bool oppWorseni
 }
 
 constexpr int futility_move_count(bool improving, bool badQuiets, Depth depth) {
-    return (3 + depth * depth) / (2 - improving) - badQuiets;
+    return (3 + depth * depth) / (2 - improving + badQuiets);
 }
 
 int correction_value(const Worker& w, const Position& pos, const Stack* const ss) {
