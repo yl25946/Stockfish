@@ -959,7 +959,7 @@ Value Search::Worker::search(
 moves_loop:  // When in check, search starts here
 
     // Step 12. A small Probcut idea
-    probCutBeta = beta + 413;
+    probCutBeta = beta + 413 - 70 * improving;
     if ((ttData.bound & BOUND_LOWER) && ttData.depth >= depth - 4 && ttData.value >= probCutBeta
         && !is_decisive(beta) && is_valid(ttData.value) && !is_decisive(ttData.value))
         return probCutBeta;
