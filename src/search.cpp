@@ -974,7 +974,8 @@ moves_loop:  // When in check, search starts here
 
     value = bestValue;
 
-    int moveCount = 0;
+    int moveCount           = 0;
+    int badCaptureMoveCount = 0;
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -998,6 +999,9 @@ moves_loop:  // When in check, search starts here
             continue;
 
         ss->moveCount = ++moveCount;
+        if (mp.stage == 5)
+            badCaptureMoveCount++;
+
 
         if (rootNode && is_mainthread() && nodes > 10000000)
         {
@@ -1034,6 +1038,9 @@ moves_loop:  // When in check, search starts here
             // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold
             if (moveCount >= futility_move_count(improving, depth))
                 mp.skip_quiet_moves();
+            if (mp.stage == 5 && badCaptureMoveCount >= 3 + depth * depth)
+                continue;
+
 
             // Reduced depth of the next LMR search
             int lmrDepth = newDepth - r / 1024;

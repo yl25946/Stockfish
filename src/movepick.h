@@ -36,6 +36,7 @@ class Position;
 class MovePicker {
 
    public:
+    int                          stage;
     MovePicker(const MovePicker&)            = delete;
     MovePicker& operator=(const MovePicker&) = delete;
     MovePicker(const Position&,
@@ -67,7 +68,6 @@ class MovePicker {
     const PawnHistory*           pawnHistory;
     Move                         ttMove;
     ExtMove *                    cur, *endMoves, *endBadCaptures, *beginBadQuiets, *endBadQuiets;
-    int                          stage;
     int                          threshold;
     Depth                        depth;
     int                          ply;
