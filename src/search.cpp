@@ -975,6 +975,8 @@ moves_loop:  // When in check, search starts here
     value = bestValue;
 
     int moveCount = 0;
+    int badQuietMoveCount = 0;
+    int badCaptureMoveCount = 0;
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -998,6 +1000,8 @@ moves_loop:  // When in check, search starts here
             continue;
 
         ss->moveCount = ++moveCount;
+        badCaptureMoveCount += mp.stage == 5;
+        badQuietMoveCount +=  mp.stage == 6;
 
         if (rootNode && is_mainthread() && nodes > 10000000)
         {
@@ -1195,8 +1199,10 @@ moves_loop:  // When in check, search starts here
         if (PvNode && !is_decisive(bestValue))
             r -= risk_tolerance(pos, bestValue);
 
-        if (mp.stage == 5 || mp.stage == 6)
-            r += 1024;
+        if (mp.stage == 5)
+            r += 256 + 256 * std::log(badCaptureMoveCount);
+        else if(mp.stage == 6)
+            r+= 512 + 768 * std::log(badQuietMoveCount);
 
         // Increase reduction for cut nodes
         if (cutNode)
