@@ -1195,6 +1195,9 @@ moves_loop:  // When in check, search starts here
         if (PvNode && !is_decisive(bestValue))
             r -= risk_tolerance(pos, bestValue);
 
+        if (mp.stage == 5 || mp.stage == 6)
+            r += 1024;
+
         // Increase reduction for cut nodes
         if (cutNode)
             r += 2608 + 1024 * !ttData.move;
