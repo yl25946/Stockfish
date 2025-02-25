@@ -1038,7 +1038,7 @@ moves_loop:  // When in check, search starts here
             // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold
             if (moveCount >= futility_move_count(improving, depth))
                 mp.skip_quiet_moves();
-            if (mp.stage == 5 && badCaptureMoveCount >= 3 + depth * depth)
+            if (mp.stage == 5 && moveCount >= futility_move_count(improving, depth))
                 continue;
 
 
