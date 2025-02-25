@@ -78,8 +78,8 @@ Value futility_margin(Depth d, bool noTtCutNode, bool improving, bool oppWorseni
     return futilityMult * d - improvingDeduction - worseningDeduction;
 }
 
-constexpr int futility_move_count(bool improving, Depth depth) {
-    return (3 + depth * depth) / (2 - improving);
+constexpr int futility_move_count(bool improving, bool badQuiets, Depth depth) {
+    return (3 + depth * depth) / (2 - improving) - badQuiets;
 }
 
 int correction_value(const Worker& w, const Position& pos, const Stack* const ss) {
@@ -1032,7 +1032,7 @@ moves_loop:  // When in check, search starts here
         if (!rootNode && pos.non_pawn_material(us) && !is_loss(bestValue))
         {
             // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold
-            if (moveCount >= futility_move_count(improving, depth))
+            if (moveCount >= futility_move_count(improving, mp.stage == 6, depth))
                 mp.skip_quiet_moves();
 
             // Reduced depth of the next LMR search
