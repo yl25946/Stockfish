@@ -70,6 +70,8 @@ namespace Stockfish::Tools
         std::string input_filename = "in.binpack";
         std::string output_filename = "out.binpack";
         bool debug_print = false;
+        // we only rescore if the absolute value of the search score is <= this value
+        int threshold = 150;
     };
 
     [[nodiscard]] std::int16_t nudge(NudgedStaticParams& params, std::int16_t static_eval_i16, std::int16_t deep_eval_i16)
@@ -587,7 +589,7 @@ namespace Stockfish::Tools
                     pos.sfen_pack(ps.sfen, false);
                     // nnue-pytorch training data loader skips positions with score VALUE_NONE
 
-                    if (ps.score != 32002)
+                    if (std::abs(ps.score) <= params.threshold)
                         ps.score = Stockfish::Eval::NNUE::evaluate_pure(pos);
                         
                     ps.padding = 0;
