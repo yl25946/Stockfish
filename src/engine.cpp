@@ -272,7 +272,7 @@ void Engine::trace_eval() const {
     sync_cout << "\n" << Eval::trace(p, *networks) << sync_endl;
 }
 
-void Engine::relabel(const std::string& file) {
+void Engine::relabel(const std::string& file, int threshold) {
     std::ifstream is(file, std::ios::binary);
     std::ofstream os(file + ".out", std::ios::binary);
 
@@ -291,7 +291,7 @@ void Engine::relabel(const std::string& file) {
     verify_networks();
 
     sync_cout << "Relabling from bulletformat file " << std::quoted(file) << " to "
-              << std::quoted(file + ".out") << "..." << sync_endl;
+              << std::quoted(file + ".out") <<  "with threshold " << threshold <<  "..." << sync_endl;
 
     BulletEntry currEntry;
     StateInfo   si;
@@ -301,7 +301,8 @@ void Engine::relabel(const std::string& file) {
     while (is.read(reinterpret_cast<char*>(&currEntry), sizeof(currEntry)))
     {
         p.set(currEntry, &si);
-        currEntry.score = Eval::evaluate_pure(*networks, p, *caches);
+        if(std::abs(currEntry.score) <= threshold)
+            currEntry.score = Eval::evaluate_pure(*networks, p, *caches);
         os.write(reinterpret_cast<const char*>(&currEntry), sizeof(currEntry));
     }
 }

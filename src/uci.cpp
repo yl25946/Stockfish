@@ -164,11 +164,18 @@ void UCIEngine::loop() {
         }
         else if (token == "relabel")
         {
-            std::string file;
+            std::string file, command;
+            // only relabel if the abs is less than this value
+            int threshold = 32000;
 
             is >> std::skipws >> file;
 
-            engine.relabel(file);
+            is >> std::skipws >> command;
+
+            if(command == "threshold")
+                is >> std::skipws >> threshold;
+
+            engine.relabel(file, threshold);
         }
         else if (token == "--help" || token == "help" || token == "--license" || token == "license")
             sync_cout
