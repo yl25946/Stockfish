@@ -601,7 +601,7 @@ Value Search::Worker::search(
     // Check if we have an upcoming move that draws by repetition
     if (!rootNode && alpha < VALUE_DRAW && pos.upcoming_repetition(ss->ply))
     {
-        alpha = value_draw(this->nodes);
+        alpha = value_draw(this->nodes) - 10;
         if (alpha >= beta)
             return alpha;
     }
