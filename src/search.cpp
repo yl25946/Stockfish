@@ -950,7 +950,7 @@ Value Search::Worker::search(
     // At sufficient depth, reduce depth for PV/Cut nodes without a TTMove.
     // (*Scaler) Making IIR more aggressive scales poorly.
     if (!ss->followPV && !allNode && depth >= 6 && !ttData.move
-        && (2000 * priorReduction) / depth <= 300)
+        && (2000 * priorReduction) / depth <= 200)
         depth--;
 
     // Step 11. ProbCut
