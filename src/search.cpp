@@ -892,6 +892,8 @@ Value Search::Worker::search(
     // For PvNodes, we must have a guard against mates being returned.
     if (!PvNode && eval < alpha - 502 - 306 * depth * depth)
         return qsearch<NonPV>(pos, ss, alpha, beta);
+    else if (!PvNode && eval < alpha - 300 - 175 * depth * depth && depth > 2)
+        depth -= 1;
 
     // Step 8. Futility pruning: child node
     // The depth condition is important for mate finding.
