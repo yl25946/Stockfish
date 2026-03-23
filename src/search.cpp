@@ -462,7 +462,7 @@ void Search::Worker::iterative_deepening() {
           (static_cast<double>(matching_moves))
           / std::max<double>(1.0, static_cast<double>((to_search_pv * (to_search_pv + 1)) / 2));
 
-        std::cout << "weighted PV Match:" << pv_match << "\n";
+        // std::cout << "weighted PV Match:" << pv_match << "\n";
 
 
         if (!threads.stop)
