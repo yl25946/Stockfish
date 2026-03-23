@@ -454,7 +454,9 @@ void Search::Worker::iterative_deepening() {
 
         for (auto i = 0ULL; i < to_search_pv; ++i)
         {
-            matching_moves += (previousPV[i] == currentPV[i]) ? (to_search_pv - i) : 0;
+            if (previousPV[i] != currentPV[i])
+                break;
+            matching_moves += (to_search_pv - i);
             // std::cout << (int) previousPV[i].raw() << " " << (int) currentPV[i].raw() << "\n";
         }
 
